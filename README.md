@@ -19,9 +19,9 @@ You could always split your file yourself with the split command and then use xa
 ``` 
 LAN (10Gbps pipe)
 - scp: 4000 Mbps
-- zap.py: 8497 Mbps
+- zap: 8497 Mbps
 
 WAN (1Gbps pipe; tailscale; 70ms RTT)
 - scp: 100-300 Mbps
-- zap.py: 700-850 Mbps
+- zap: 700-850 Mbps
 ```
