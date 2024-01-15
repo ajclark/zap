@@ -9,6 +9,12 @@ Zap reads the input file at different offsets in parallel. This saves time and a
 ## Why would I want this?
 Good use cases for Zap might be sending large video files to people on the other side of the globe as fast as possible. 
 
+## What if I have multiple files across a high-RTT link?
+If you need to send multiple files then rclone or rsync is likely better suited. Note that to drive up the utilization of your network pipe you will have to use rsync in conjunction with xargs or GNU parallel, both are well documented. 
+
+## What if I only have one file but hate your tool?
+You could always split your file yourself with the split command and then use xargs + rsync, or rclone with parallel streams.
+
 ## Benchmarks
 ``` 
 LAN (10Gbps pipe)
