@@ -12,8 +12,8 @@ Good use cases for Zap might be sending large video files to people on the other
 ## What if I have multiple files across a high-RTT link?
 If you need to send multiple files then rclone or rsync is likely better suited. Note that to drive up the utilization of your network pipe you will have to use rsync in conjunction with xargs or GNU parallel, both are well documented. 
 
-## What if I only have one file but hate your tool?
-You could always split your file yourself with the split command and then use xargs + rsync, or rclone with parallel streams.
+## Does Zap help on low-RTT links?
+Yes. Take a look at the benchmarks below. A single file copy with scp might max out at 4Gbps on a local 10G LAN, where as Zap can drive 2x the throughput thanks to parallelism.  
 
 ## Benchmarks
 ``` 
