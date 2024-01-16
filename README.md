@@ -6,6 +6,26 @@ Zap splits a single file in to 'chunks' and copies all chunks in parallel via SS
 
 Zap also takes advantage of the BBR TCP congestion control algorithm, which achieves higher overall TCP throughput over high-RTT links than CUBIC.
 
+## Usage
+```
+USAGE:
+    zap [OPTIONS] --user <user> --server <server> --remote-path <remote_path> <input_file>
+
+ARGS:
+    <input_file>    The input file path
+
+OPTIONS:
+    -c, --chunks <chunks>                The number of chunks to split the file into [default: 20]
+    -h, --help                           Print help information
+    -i, --ssh-key-path <ssh_key_path>    The SSH key path for authentication
+    -p, --remote-path <remote_path>      The remote path where chunks will be stored
+    -s, --server <server>                The hostname of the remote server
+    -u, --user <user>                    The username for the remote server
+    -V, --version                        Print version information
+```
+
+`./zap -u ubuntu -s 1.2.3.4 -p /home/ubuntu my-file.bin`
+
 ### Why would I want this?
 Good use cases for Zap might be sending a large video file to someone on the other side of the globe as fast as possible. 
 
