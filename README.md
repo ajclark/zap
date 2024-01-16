@@ -9,8 +9,8 @@ Zap also takes advantage of the BBR TCP congestion control algorithm, which achi
 ## Why would I want this?
 Good use cases for Zap might be sending a large video file to someone on the other side of the globe as fast as possible. 
 
-## What if I have multiple files across a high-RTT link?
-If you need to send multiple files then rclone or rsync is likely better suited. Note that to drive up the utilization of your network pipe you will have to use rsync in conjunction with xargs or GNU parallel, both are well documented. 
+## What if I have multiple files to send across a high-RTT link?
+If you need to send multiple files then rclone or rsync is likely better suited. Note that to drive up the utilization of your network pipe you will have to use rsync in conjunction with xargs or GNU parallel.
 
 ## Does Zap help on low-RTT links?
 Yes. Take a look at the benchmarks below. A single file copy with scp might max out at 4Gbps on a local 10G LAN, where as Zap can drive 2x the throughput thanks to parallelism.  
