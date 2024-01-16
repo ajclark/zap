@@ -18,7 +18,7 @@ ARGS:
     <input_file>    The input file path
 
 OPTIONS:
-    -c, --streams <streams>                The number of streams to split the file into [default: 20]
+    -c, --streams <streams>              The number of streams to split the file into [default: 20]
     -h, --help                           Print help information
     -i, --ssh-key-path <ssh_key_path>    The SSH key path for authentication
     -p, --remote-path <remote_path>      The remote path where streams will be stored
