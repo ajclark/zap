@@ -8,16 +8,16 @@ fn main() {
     let matches = App::new("Zap — Fast single file copy")
         .version("0.1")
         .author("Allan Clark. <napta2k@gmail.com>")
-        .about("Transfers a file in parallel chunks over SSH")
+        .about("Transfers a file in parallel streams over SSH")
         .arg_required_else_help(true)
         .arg(Arg::new("input_file")
             .help("The input file path")
             .required(true)
             .index(1))
-        .arg(Arg::new("chunks")
+        .arg(Arg::new("streams")
             .short('c')
-            .long("chunks")
-            .help("The number of chunks to split the file into")
+            .long("streams")
+            .help("The number of parallel streams")
             .default_value("20")
             .takes_value(true))
         .arg(Arg::new("user")
@@ -35,7 +35,7 @@ fn main() {
         .arg(Arg::new("remote_path")
             .short('p')
             .long("remote-path")
-            .help("The remote path where chunks will be stored")
+            .help("The remote path where streams will be stored")
             .takes_value(true)
             .required(true))
         .arg(Arg::new("ssh_key_path")
@@ -46,18 +46,18 @@ fn main() {
         .get_matches();
 
     let input_file_path = matches.value_of("input_file").unwrap();
-    let num_chunks: usize = matches.value_of("chunks").unwrap().parse()
-        .expect("num_chunks must be an integer");
+    let num_streams: usize = matches.value_of("streams").unwrap().parse()
+        .expect("num_streams must be an integer");
     let remote_user = matches.value_of("user").unwrap();
     let remote_host = matches.value_of("server").unwrap();
     let remote_path = matches.value_of("remote_path").unwrap();
     let ssh_key_path = matches.value_of("ssh_key_path");
 
-    let max_threads = num_chunks;
+    let max_threads = num_streams;
 
     split_and_copy_binary_file(
         input_file_path, 
-        num_chunks, 
+        num_streams, 
         remote_user, 
         remote_host, 
         remote_path, 

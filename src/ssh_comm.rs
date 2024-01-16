@@ -9,8 +9,8 @@ const MAX_RETRIES: u32 = 3;
 const RETRY_DELAY_SECONDS: u64 = 5;
 const BUFFER_SIZE: usize = 1 * 1024 * 1024; // 1MB
 
-pub fn stream_chunk_to_remote(
-    chunk_num: usize,
+pub fn stream_stream_to_remote(
+    stream_num: usize,
     start: usize,
     end: usize,
     input_file: &str,
@@ -22,12 +22,12 @@ pub fn stream_chunk_to_remote(
     let mut retries = 0;
     while retries <= MAX_RETRIES {
         let user_host = format!("{}@{}", remote_user, remote_host);
-        let chunk_command = format!("cat > {}/chunk_{}.bin", remote_path, chunk_num);
+        let stream_command = format!("cat > {}/stream_{}.bin", remote_path, stream_num);
 
         let mut ssh_args = vec![
             "-o", "StrictHostKeyChecking=no",
             &user_host,
-            &chunk_command,
+            &stream_command,
         ];
 
         if let Some(key_path) = ssh_key_path {
@@ -45,9 +45,9 @@ pub fn stream_chunk_to_remote(
             if let Some(mut stdin) = child.stdin.take() {
                 let mut file = File::open(input_file)?;
                 file.seek(io::SeekFrom::Start(start as u64))?;
-                let chunk_size = end - start; // Calculate the exact chunk size
-                let mut buffer = vec![0; BUFFER_SIZE.min(chunk_size)];
-                let mut bytes_to_read = chunk_size;
+                let stream_size = end - start; // Calculate the exact stream size
+                let mut buffer = vec![0; BUFFER_SIZE.min(stream_size)];
+                let mut bytes_to_read = stream_size;
 
                 while bytes_to_read > 0 {
                     let read_size = buffer.len().min(bytes_to_read);
@@ -68,26 +68,26 @@ pub fn stream_chunk_to_remote(
         match result {
             Ok(_) => return Ok(()),
             Err(e) => {
-                eprintln!("Error streaming chunk {}: {}", chunk_num, e);
+                eprintln!("Error streaming stream {}: {}", stream_num, e);
                 retries += 1;
                 if retries > MAX_RETRIES {
-                    return Err(format!("Failed to stream chunk {} after {} retries", chunk_num, MAX_RETRIES));
+                    return Err(format!("Failed to stream stream {} after {} retries", stream_num, MAX_RETRIES));
                 }
-                eprintln!("Retrying chunk {} ({}/{})", chunk_num, retries, MAX_RETRIES);
+                eprintln!("Retrying stream {} ({}/{})", stream_num, retries, MAX_RETRIES);
                 thread::sleep(Duration::from_secs(RETRY_DELAY_SECONDS));
             }
         }
     }
 
-    Err(format!("Failed to stream chunk {} after {} retries", chunk_num, MAX_RETRIES))
+    Err(format!("Failed to stream stream {} after {} retries", stream_num, MAX_RETRIES))
 }
 
-pub fn assemble_chunks(
+pub fn assemble_streams(
     remote_user: &str,
     remote_host: &str,
     remote_path: &str,
     ssh_key_path: Option<&str>,
-    num_chunks: usize,
+    num_streams: usize,
     input_file_path: &str,
 ) {
     let file_name = Path::new(input_file_path)
@@ -99,14 +99,14 @@ pub fn assemble_chunks(
     // Command to remove the existing output file if it exists
     let remove_existing_file_command = format!("rm -f {}/{}", remote_path, file_name);
 
-    // Command to assemble chunks into the final output file
-    let assemble_command: Vec<String> = (0..num_chunks)
-        .map(|i| format!("cat {}/chunk_{}.bin >> {}/{}", remote_path, i, remote_path, file_name))
+    // Command to assemble streams into the final output file
+    let assemble_command: Vec<String> = (0..num_streams)
+        .map(|i| format!("cat {}/stream_{}.bin >> {}/{}", remote_path, i, remote_path, file_name))
         .collect();
 
-    // Command to delete individual chunk files
-    let delete_chunks_command: Vec<String> = (0..num_chunks)
-        .map(|i| format!("rm {}/chunk_{}.bin", remote_path, i))
+    // Command to delete individual stream files
+    let delete_streams_command: Vec<String> = (0..num_streams)
+        .map(|i| format!("rm {}/stream_{}.bin", remote_path, i))
         .collect();
 
     let ssh_key_arg = ssh_key_path.map_or_else(|| "".to_string(), |key| format!("-i {}", key));
@@ -117,14 +117,14 @@ pub fn assemble_chunks(
         remote_host,
         remove_existing_file_command,
         assemble_command.join(";"),
-        delete_chunks_command.join(";")
+        delete_streams_command.join(";")
     );
 
     Command::new("sh")
         .arg("-c")
         .arg(&ssh_command)
         .status()
-        .expect("Failed to execute ssh command to assemble and clean up chunks");
+        .expect("Failed to execute ssh command to assemble and clean up streams");
 
-    println!("File assembled and chunks cleaned on {}:{}/{}", remote_host, remote_path, file_name);
+    println!("File assembled and streams cleaned on {}:{}/{}", remote_host, remote_path, file_name);
 }
