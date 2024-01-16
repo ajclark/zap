@@ -7,7 +7,7 @@ Zap splits a single file in to chunks and copies all chunks in parallel via SSH.
 Zap reads the input file at different offsets in parallel. This saves time and avoids wasting local disk space through creating chunks on the local side. However, Zap sends these chunks to the remote side and then assembles the file, requiring N+1 disk space on the remote side. To send a 100GB file would require 200GB of storage on the remote side, including the temporary chunks + final assembled file. 
 
 ## Why would I want this?
-Good use cases for Zap might be sending large video files to people on the other side of the globe as fast as possible. 
+Good use cases for Zap might be sending a large video file to someone on the other side of the globe as fast as possible. 
 
 ## What if I have multiple files across a high-RTT link?
 If you need to send multiple files then rclone or rsync is likely better suited. Note that to drive up the utilization of your network pipe you will have to use rsync in conjunction with xargs or GNU parallel, both are well documented. 
