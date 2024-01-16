@@ -18,10 +18,11 @@ ARGS:
     <input_file>    The input file path
 
 OPTIONS:
-    -c, --streams <streams>                The number of streams to split the file into [default: 20]
+    -c, --streams <streams>              The number of parallel streams [default: 20]
     -h, --help                           Print help information
     -i, --ssh-key-path <ssh_key_path>    The SSH key path for authentication
     -p, --remote-path <remote_path>      The remote path where streams will be stored
+    -r, --retries <retries>              The number of retries to attempt [default: 3]
     -s, --server <server>                The hostname of the remote server
     -u, --user <user>                    The username for the remote server
     -V, --version                        Print version information

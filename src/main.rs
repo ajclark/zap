@@ -43,6 +43,12 @@ fn main() {
             .long("ssh-key-path")
             .help("The SSH key path for authentication")
             .takes_value(true))
+        .arg(Arg::new("retries")
+            .short('r')
+            .long("retries")
+            .help("The number of retries to attempt")
+            .takes_value(true)
+            .default_value("3"))
         .get_matches();
 
     let input_file_path = matches.value_of("input_file").unwrap();
@@ -52,7 +58,8 @@ fn main() {
     let remote_host = matches.value_of("server").unwrap();
     let remote_path = matches.value_of("remote_path").unwrap();
     let ssh_key_path = matches.value_of("ssh_key_path");
-
+    let retries: u32 = matches.value_of("retries").unwrap().parse()
+        .expect("retries must be an integer");
     let max_threads = num_streams;
 
     split_and_copy_binary_file(
@@ -62,6 +69,7 @@ fn main() {
         remote_host, 
         remote_path, 
         ssh_key_path.as_deref(),
-        max_threads
+        max_threads,
+        retries
     );
 }

@@ -5,7 +5,6 @@ use std::io::{self, Read, Write, Seek};
 use std::time::Duration;
 use std::thread;
 
-const MAX_RETRIES: u32 = 3;
 const RETRY_DELAY_SECONDS: u64 = 5;
 const BUFFER_SIZE: usize = 1 * 1024 * 1024; // 1MB
 
@@ -18,9 +17,10 @@ pub fn stream_stream_to_remote(
     remote_host: &str,
     remote_path: &str,
     ssh_key_path: Option<&str>,
+    retries: u32, // Added retries as a parameter
 ) -> Result<(), String> {
-    let mut retries = 0;
-    while retries <= MAX_RETRIES {
+    let mut attempt = 0;
+    while attempt <= retries {
         let user_host = format!("{}@{}", remote_user, remote_host);
         let stream_command = format!("cat > {}/stream_{}.bin", remote_path, stream_num);
 
@@ -40,7 +40,6 @@ pub fn stream_stream_to_remote(
             .stdin(std::process::Stdio::piped())
             .spawn()
             .expect("Failed to start ssh command");
-
         let result = (|| -> io::Result<()> {
             if let Some(mut stdin) = child.stdin.take() {
                 let mut file = File::open(input_file)?;
@@ -69,17 +68,17 @@ pub fn stream_stream_to_remote(
             Ok(_) => return Ok(()),
             Err(e) => {
                 eprintln!("Error streaming stream {}: {}", stream_num, e);
-                retries += 1;
-                if retries > MAX_RETRIES {
-                    return Err(format!("Failed to stream stream {} after {} retries", stream_num, MAX_RETRIES));
+                attempt += 1;
+                if attempt > retries {
+                    return Err(format!("Failed to stream stream {} after {} retries", stream_num, retries));
                 }
-                eprintln!("Retrying stream {} ({}/{})", stream_num, retries, MAX_RETRIES);
+                eprintln!("Retrying stream {} ({}/{})", stream_num, attempt, retries);
                 thread::sleep(Duration::from_secs(RETRY_DELAY_SECONDS));
             }
         }
     }
 
-    Err(format!("Failed to stream stream {} after {} retries", stream_num, MAX_RETRIES))
+    Err(format!("Failed to stream stream {} after {} retries", stream_num, retries))
 }
 
 pub fn assemble_streams(
