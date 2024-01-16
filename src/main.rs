@@ -1,4 +1,4 @@
-od ssh_comm;
+mod ssh_comm;
 mod utils;
 
 use clap::{App, Arg};
