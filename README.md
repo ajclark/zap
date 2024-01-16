@@ -55,4 +55,6 @@ WAN (40Gbps pipe)*
 ```
 *Note: 40Gbps San Jose testing instances are 40Gbps network connections but unknown bottlenecks between datacenters. Also maxed out disk bandwidth and heavy SSH CPU contention at these speeds.
 
+## Build instructions
+`cd zap && cargo build --release`
 
