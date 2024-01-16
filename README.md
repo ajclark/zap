@@ -44,4 +44,11 @@ LAN (10Gbps pipe)
 WAN (1Gbps pipe; tailscale; 70ms RTT)
 - scp: 100-300 Mbps
 - zap: 700-850 Mbps
+WAN (40Gbps pipe)*
+- zap: San Jose <> Tokyo: 3000 Mbps
+- zap: San Jose <> Tokyo: 4000 Mbps (50 chunks)
+- zap: San Jose <> Tokyo: 120000 Mbps (100 chunks)
 ```
+*Note: 40Gbps San Jose testing instances are 40Gbps network connections but unknown bottlenecks between datacenters. Also maxed out disk bandwidth and heavy SSH CPU contention at these speeds.
+
+
