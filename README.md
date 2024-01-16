@@ -1,5 +1,5 @@
 # zap
-Zap is designed to be fast at copying a single file over a fat internet pipe with high RTT latency. e.g. California to New York or London to Sydney. 
+Zap is designed to transmit a single file over a high-latency fat internet pipe as quickly as possible. e.g. California to New York or London to Sydney. 
 
 ## How does Zap work?
 Zap splits a single file in to 'chunks' and copies all chunks in parallel via SSH. This creates multiple parallel network flows that increases the aggregate utilization of the network pipe. Zap does not use any additional local disk space when creating the chunks, instead Zap reads the input file at different offsets in parallel and streams these offsets directly across the network. This saves time and avoids wasting local disk space. To send a 100GB file, Zap requires 200GB of remote space but no additional local space. Zap uses the extra remote space to write out the temporary chunks prior to final assembly of the file. 
