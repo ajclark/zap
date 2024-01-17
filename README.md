@@ -58,5 +58,6 @@ WAN (40Gbps pipe)*
 
 ## Build instructions
 Zap has been tested On Debian/Ubuntu/RHEL Linux and MacOS. It will likely work on Windows, but depends on SSH.
+
 `cd zap && cargo build --release`
 
