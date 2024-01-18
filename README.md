@@ -1,5 +1,5 @@
 # zap
-Zap is designed to transmit a single file over a high-latency, high-bandwidth internet connection as quickly as possible. e.g. California to New York or London to Sydney. 
+Zap is designed to transmit a single file over a high-latency, high-bandwidth internet connection as quickly as possible. e.g. California to New York or London to Sydney. Zap also transfers a file 6-8X faster than conventional file transfer tools on high-speed LANs and datacenter networks. It has been tested on up to 100 Gbps NICs.
 
 ## How does Zap work?
 Zap splits a single file in to 'streams' and copies all streams in parallel via SSH. This creates multiple parallel network flows that increases the aggregate utilization of the network pipe. Zap does not use any additional local disk space when creating streams, instead Zap reads the input file at different offsets in parallel and streams these offsets directly across the network via SSH. This saves time and avoids wasting local disk space. To send a 100GB file, Zap requires 200GB of remote space but no additional local space. Zap uses the additional remote space to write out the temporary streams prior to final assembly of the file. 
@@ -41,15 +41,20 @@ Yes. Take a look at the benchmarks below. A single file copy with scp might max 
 
 ## Benchmarks
 ``` 
-LAN (10Gbps pipe)
+LAN (1 0Gbps)
 - scp: 4000 Mbps
 - zap: 8497 Mbps
 
-WAN (1Gbps pipe; tailscale; 70ms RTT)
+LAN (100 Gbps)
+- scp: 6800 Mbps
+- zap: 40000 Mbps
+- zap: 80000 Mbps (100 streams)
+
+WAN (1 Gbps; tailscale; 70ms RTT)
 - scp: 100-300 Mbps
 - zap: 700-850 Mbps
 
-WAN (40Gbps pipe)*
+WAN (40 Gbps)*
 - zap: San Jose <> Tokyo: 3000 Mbps
 - zap: San Jose <> Tokyo: 4000 Mbps (50 streams)
 - zap: San Jose <> Tokyo: 120000 Mbps (100 streams)
