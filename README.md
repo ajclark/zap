@@ -31,7 +31,7 @@ OPTIONS:
 `./zap -u ubuntu -s 1.2.3.4 -p /home/ubuntu my-file.bin`
 
 ### Why would I want this?
-Good use cases for Zap might be sending a large video file to someone on the other side of the globe as fast as possible. 
+Good use cases for Zap might be sending a large video file to someone on the other side of the country or globe as fast as possible. 
 
 ### What if I have multiple files to send across a high-RTT link?
 If you need to send multiple files then rclone or rsync is likely better suited. Note that to drive up the utilization of your network pipe you will have to use rsync in conjunction with xargs or GNU parallel.
