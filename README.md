@@ -57,7 +57,7 @@ WAN (1 Gbps; tailscale; 70ms RTT)
 WAN (40 Gbps)*
 - zap: San Jose <> Tokyo: 3000 Mbps
 - zap: San Jose <> Tokyo: 4000 Mbps (50 streams)
-- zap: San Jose <> Tokyo: 120000 Mbps (100 streams)
+- zap: San Jose <> Tokyo: 12000 Mbps (100 streams)
 ```
 *Note: 40Gbps San Jose testing instances are 40Gbps network connections but unknown bottlenecks between datacenters. Also maxed out disk bandwidth and heavy SSH CPU contention at these speeds.
 
