@@ -41,7 +41,7 @@ Yes. Take a look at the benchmarks below. A single file copy with scp might max 
 
 ## Benchmarks
 ``` 
-LAN (1 0Gbps)
+LAN (10 Gbps)
 - scp: 4000 Mbps
 - zap: 8497 Mbps
 
