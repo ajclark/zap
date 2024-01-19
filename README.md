@@ -12,23 +12,21 @@ For fastest throughput on high-RTT links, change the congestion algorithm on bot
 ## Usage
 ```
 USAGE:
-    zap [OPTIONS] --user <user> --server <server> --remote-path <remote_path> <input_file>
+    zap [OPTIONS] <input_file> <user@host:remote_path>
 
 ARGS:
-    <input_file>    The input file path
+    <input_file>               The input file path
+    <user@host:remote_path>    Specifies user@host:remote_path
 
 OPTIONS:
     -c, --streams <streams>              The number of parallel streams [default: 20]
     -h, --help                           Print help information
     -i, --ssh-key-path <ssh_key_path>    The SSH key path for authentication
-    -p, --remote-path <remote_path>      The remote path where streams will be stored
     -r, --retries <retries>              The number of retries to attempt [default: 3]
-    -s, --server <server>                The hostname of the remote server
-    -u, --user <user>                    The username for the remote server
     -V, --version                        Print version information
 ```
 
-`./zap -u ubuntu -s 1.2.3.4 -p /home/ubuntu my-file.bin`
+`./zap 100mb.bin user@host:`
 
 ### Why would I want this?
 Good use cases for Zap might be sending a large video file to someone on the other side of the country or globe as fast as possible. 
