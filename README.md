@@ -60,7 +60,7 @@ WAN (40 Gbps)*
 *Note: 40Gbps San Jose testing instances are 40Gbps network connections but unknown bottlenecks between datacenters. Also maxed out disk bandwidth and heavy SSH CPU contention at these speeds.
 
 ## Build instructions
-Zap has been tested On Debian/Ubuntu/RHEL Linux and MacOS. It will likely work on Windows, but depends on SSH.
+Zap has been tested On Debian/Ubuntu/EL Linux and MacOS. It will possibly work on Windows, but requires SSH and a shell environment.
 
 `cd zap && cargo build --release`
 
