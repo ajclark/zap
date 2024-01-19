@@ -17,13 +17,12 @@ pub fn stream_stream_to_remote(
     remote_host: &str,
     remote_path: &str,
     ssh_key_path: Option<&str>,
-    retries: u32, // Added retries as a parameter
+    retries: u32,
 ) -> Result<(), String> {
     let mut attempt = 0;
     while attempt <= retries {
         let user_host = format!("{}@{}", remote_user, remote_host);
         let stream_command = format!("cat > {}/stream_{}.bin", remote_path, stream_num);
-
         let mut ssh_args = vec![
             "-o", "StrictHostKeyChecking=no",
             &user_host,
