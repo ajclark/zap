@@ -38,6 +38,13 @@ fn main() {
             .help("The number of retries to attempt")
             .takes_value(true)
             .default_value("3"))
+        .arg(Arg::new("port")
+            .short('p')
+            .long("port")
+            .help("SSH port")
+            .takes_value(true)
+            .required(false)
+            .default_value("22"))
         .get_matches();
 
     let user_host_path = matches.value_of("user_host_path").unwrap();
@@ -86,6 +93,8 @@ fn main() {
     let input_file_path = matches.value_of("input_file").unwrap();
     let num_streams: usize = matches.value_of("streams").unwrap().parse()
         .expect("num_streams must be an integer");
+    let ssh_port: usize = matches.value_of("port").unwrap().parse()
+        .expect("port must be an integer");
     let ssh_key_path = matches.value_of("ssh_key_path");
     let retries: u32 = matches.value_of("retries").unwrap().parse()
         .expect("retries must be an integer");
@@ -99,7 +108,8 @@ fn main() {
         &remote_path,
         ssh_key_path.as_deref(),
         max_threads,
-        retries
+        retries,
+        ssh_port,
     );
 }
 

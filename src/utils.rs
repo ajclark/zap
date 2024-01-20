@@ -12,6 +12,7 @@ pub fn split_and_copy_binary_file(
     ssh_key_path: Option<&str>,
     max_threads: usize,
     retries: u32,
+    ssh_port: usize,
 ) {
     let file_size = fs::metadata(input_file).unwrap().len() as usize;
     let stream_size = file_size / num_streams;
@@ -37,7 +38,7 @@ pub fn split_and_copy_binary_file(
             }
 
             match stream_stream_to_remote(
-                stream_num, start, end, &input_file, &remote_user, &remote_host, &remote_path, ssh_key_path_cloned.as_deref(), retries
+                stream_num, start, end, &input_file, &remote_user, &remote_host, &remote_path, ssh_key_path_cloned.as_deref(), retries, ssh_port
             ) {
                 Ok(_) => println!("Chunk {} transferred successfully.", stream_num),
                 Err(e) => {
@@ -62,6 +63,6 @@ pub fn split_and_copy_binary_file(
         eprintln!("Some streams failed to transfer and need to be retried.");
     } else {
         println!("All streams transferred successfully. Assembling on remote host...");
-        assemble_streams(&remote_user, &remote_host, &remote_path, ssh_key_path, num_streams, &input_file);
+        assemble_streams(&remote_user, &remote_host, &remote_path, ssh_key_path, num_streams, &input_file, ssh_port);
     }
 }

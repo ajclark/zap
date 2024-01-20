@@ -18,12 +18,16 @@ pub fn stream_stream_to_remote(
     remote_path: &str,
     ssh_key_path: Option<&str>,
     retries: u32,
+    ssh_port: usize,
 ) -> Result<(), String> {
     let mut attempt = 0;
+    let ssh_port_str = ssh_port.to_string();
+
     while attempt <= retries {
         let user_host = format!("{}@{}", remote_user, remote_host);
         let stream_command = format!("cat > {}/stream_{}.bin", remote_path, stream_num);
         let mut ssh_args = vec![
+            "-p", &ssh_port_str,
             "-o", "StrictHostKeyChecking=no",
             &user_host,
             &stream_command,
@@ -87,6 +91,7 @@ pub fn assemble_streams(
     ssh_key_path: Option<&str>,
     num_streams: usize,
     input_file_path: &str,
+    ssh_port: usize,
 ) {
     let file_name = Path::new(input_file_path)
         .file_name()
@@ -109,7 +114,8 @@ pub fn assemble_streams(
 
     let ssh_key_arg = ssh_key_path.map_or_else(|| "".to_string(), |key| format!("-i {}", key));
     let ssh_command = format!(
-        "ssh {} -o StrictHostKeyChecking=no {}@{} '{}; {}; {}'",
+        "ssh -p {} {} -o StrictHostKeyChecking=no {}@{} '{}; {}; {}'",
+        ssh_port,
         ssh_key_arg,
         remote_user,
         remote_host,
