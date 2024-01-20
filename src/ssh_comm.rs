@@ -102,26 +102,20 @@ pub fn assemble_streams(
     // Command to remove the existing output file if it exists
     let remove_existing_file_command = format!("rm -f {}/{}", remote_path, file_name);
 
-    // Command to assemble streams into the final output file
+    // Command to assemble streams into the final output file - for each stream: concat && rm
     let assemble_command: Vec<String> = (0..num_streams)
-        .map(|i| format!("cat {}/stream_{}.bin >> {}/{}", remote_path, i, remote_path, file_name))
-        .collect();
-
-    // Command to delete individual stream files
-    let delete_streams_command: Vec<String> = (0..num_streams)
-        .map(|i| format!("rm {}/stream_{}.bin", remote_path, i))
+        .map(|i| format!("cat {}/stream_{}.bin >> {}/{} && rm {}/stream_{}.bin", remote_path, i, remote_path, file_name, remote_path, i))
         .collect();
 
     let ssh_key_arg = ssh_key_path.map_or_else(|| "".to_string(), |key| format!("-i {}", key));
     let ssh_command = format!(
-        "ssh -p {} {} -o StrictHostKeyChecking=no {}@{} '{}; {}; {}'",
+        "ssh -p {} {} -o StrictHostKeyChecking=no {}@{} '{}; {};'",
         ssh_port,
         ssh_key_arg,
         remote_user,
         remote_host,
         remove_existing_file_command,
-        assemble_command.join(";"),
-        delete_streams_command.join(";")
+        assemble_command.join(";")
     );
 
     Command::new("sh")
