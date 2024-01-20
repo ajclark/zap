@@ -40,18 +40,32 @@ fn main() {
             .default_value("3"))
         .get_matches();
 
-    let input_file_path = matches.value_of("input_file").unwrap();
-
     let user_host_path = matches.value_of("user_host_path").unwrap();
+    
+    // Split into user@host and remote_path
     let parts: Vec<&str> = user_host_path.splitn(2, ':').collect();
-    let user_host = parts[0];
+    if parts.len() != 2 {
+        eprintln!("Invalid format: Expected format user@host:remote_file, host:remote_file, or host:");
+        process::exit(1);
+    }
 
-    // Use remote ssh CWD "." if no path provided after user@host:
-    let remote_path = if let Some(path) = parts.get(1) {
-        if path.is_empty() { "." } else { path }
-    } else {
-        "."
-    };
+    let user_host = parts[0];
+    let mut remote_path = parts[1].to_string();
+    if remote_path.is_empty() {
+        remote_path = ".".to_string();
+    }
+
+    // Disallow empty user with @ present
+    if user_host.starts_with('@') {
+        eprintln!("Invalid format: '@host:' is not allowed");
+        process::exit(1);
+    }
+
+    // Disallow empty host with @ present
+    if user_host.ends_with('@') {
+        eprintln!("Invalid format: 'user@:' is not allowed");
+        process::exit(1);
+    }
 
     let host_parts: Vec<&str> = user_host.split('@').collect();
     let (remote_user, remote_host) = match host_parts.as_slice() {
@@ -64,11 +78,12 @@ fn main() {
             (user_env, host.to_string())
         },
         _ => {
-            eprintln!("Invalid format for user@hostname");
+            eprintln!("Invalid format for user@host:remote_path");
             process::exit(1);
         }
     };
 
+    let input_file_path = matches.value_of("input_file").unwrap();
     let num_streams: usize = matches.value_of("streams").unwrap().parse()
         .expect("num_streams must be an integer");
     let ssh_key_path = matches.value_of("ssh_key_path");
@@ -81,7 +96,7 @@ fn main() {
         num_streams, 
         &remote_user, 
         &remote_host, 
-        remote_path,
+        &remote_path,
         ssh_key_path.as_deref(),
         max_threads,
         retries
