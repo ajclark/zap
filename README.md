@@ -2,7 +2,9 @@
 Zap is designed to transmit a single file over a high-latency, high-bandwidth internet connection as quickly as possible. e.g. California to New York or London to Sydney. Zap is 6-8X faster than conventional file transfer tools and has been tested with 100 Gbps NICs. Zap's goal is to saturate the network interface, even over high-latency links.
 
 ## How does Zap work?
-Zap splits a single file in to 'streams' and copies all streams in parallel via SSH. This creates multiple parallel network flows that increases the aggregate utilization of the network pipe. Zap does not use any additional local disk space when creating streams, instead Zap reads the input file at different offsets in parallel and streams these offsets directly across the network via SSH. This saves time and avoids wasting local disk space. To send a 100GB file, Zap requires 105GB of total remote space but no additional local space. Zap uses the additional remote space as buffer write out the temporary streams prior to final assembly of the file. The remote end disk space formula is `filesize + size_of_a_stream`.
+Zap splits a single file in to 'streams' and copies all streams in parallel via SSH. This creates multiple parallel network flows that increases the aggregate utilization of the network pipe. Zap does not use any additional local disk space when creating streams, instead Zap reads the input file at different offsets in parallel and streams these offsets directly across the network via SSH. This saves time and avoids wasting local disk space. 
+
+To send a 100GB file, Zap requires 105GB of total remote space but no additional local space. Zap uses the additional remote space as buffer write out the temporary streams prior to final assembly of the file. The remote end disk space formula is `filesize + size_of_a_stream`.
 
 Zap also takes advantage of the BBR TCP congestion control algorithm, which achieves higher overall TCP throughput over high-RTT links than CUBIC.
 
