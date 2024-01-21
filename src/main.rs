@@ -5,6 +5,7 @@ use clap::{App, Arg};
 use utils::split_and_copy_binary_file;
 use std::env;
 use std::process;
+use std::path::Path;
 
 fn main() {
     let matches = App::new("Zap — Fast single file copy")
@@ -46,6 +47,15 @@ fn main() {
             .required(false)
             .default_value("22"))
         .get_matches();
+
+    let input_file_path = matches.value_of("input_file").unwrap();
+
+    // Check if given input file exists
+    let path = Path::new(input_file_path);
+    if !path.is_file() {
+        eprintln!("Either the file {} does not exist, or it's a directory.", input_file_path);
+        process::exit(1);
+    }
 
     let user_host_path = matches.value_of("user_host_path").unwrap();
     
@@ -90,7 +100,6 @@ fn main() {
         }
     };
 
-    let input_file_path = matches.value_of("input_file").unwrap();
     let num_streams: usize = matches.value_of("streams").unwrap().parse()
         .expect("num_streams must be an integer");
     let ssh_port: usize = matches.value_of("port").unwrap().parse()
