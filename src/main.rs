@@ -23,7 +23,7 @@ fn main() {
             .value_name("user@host:remote_path")
             .index(2))
         .arg(Arg::new("streams")
-            .short('c')
+            .short('s')
             .long("streams")
             .help("The number of parallel streams")
             .default_value("20")
