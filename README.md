@@ -21,11 +21,11 @@ ARGS:
     <user@host:remote_path>    Specifies user@host:remote_path
 
 OPTIONS:
-    -c, --streams <streams>              The number of parallel streams [default: 20]
     -h, --help                           Print help information
     -i, --ssh-key-path <ssh_key_path>    The SSH key path for authentication
     -p, --port <port>                    SSH port [default: 22]
     -r, --retries <retries>              The number of retries to attempt [default: 3]
+    -s, --streams <streams>              The number of parallel streams [default: 20]
     -V, --version                        Print version information
 ```
 
