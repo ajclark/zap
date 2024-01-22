@@ -32,7 +32,7 @@ OPTIONS:
 `./zap 100mb.bin user@host:`
 
 ### Why would I want this?
-You should try Zap if your existing file transfer tool is not adequately utilizing your available network bandwidth for a single file.
+You should try Zap if your existing file transfer tool is not adequately utilizing your available network bandwidth.
 
 ### What if I have multiple files to send across a high-RTT link?
 If you need to send multiple files then rclone or rsync is likely better suited. Note that to drive up the utilization of your network pipe you will have to use rsync in conjunction with xargs or GNU parallel. It is also possible to run multiple instances of zap as you would with any other command. e.g. xargs. 
