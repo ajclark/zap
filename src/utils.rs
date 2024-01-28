@@ -1,6 +1,7 @@
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::fs;
+use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use crate::ssh_comm::{stream_stream_to_remote, assemble_streams};
 
 pub fn split_and_copy_binary_file(
@@ -20,6 +21,13 @@ pub fn split_and_copy_binary_file(
     let retry_flag = Arc::new(Mutex::new(vec![false; num_streams]));
     let mut handles = Vec::with_capacity(max_threads);
 
+    let m = MultiProgress::new();
+    let style = ProgressStyle::with_template(
+        "[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {msg}",
+    )
+    .unwrap()
+    .progress_chars("##-");
+
     for stream_num in 0..num_streams {
         let input_file = input_file.to_string();
         let remote_user = remote_user.to_string();
@@ -28,23 +36,32 @@ pub fn split_and_copy_binary_file(
         let ssh_key_path_cloned = ssh_key_path.map(|s| s.to_string());
         let retry_flag_clone = Arc::clone(&retry_flag);
 
-        let handle = thread::spawn(move || {
-            let start = stream_num * stream_size;
-            let mut end = start + stream_size;
+        // Create a progress bar for each stream
+        let pb = m.add(ProgressBar::new(stream_size as u64));
+        pb.set_style(style.clone());
+        pb.set_message(format!("Stream {}", stream_num));
 
-            // Add any extra bytes to the last stream
-            if stream_num == num_streams - 1 {
-                end += extra_bytes;
-            }
+        let handle = thread::spawn({
+            let _m = m.clone();
+            move || {
+                let start = stream_num * stream_size;
+                let mut end = start + stream_size;
 
-            match stream_stream_to_remote(
-                stream_num, start, end, &input_file, &remote_user, &remote_host, &remote_path, ssh_key_path_cloned.as_deref(), retries, ssh_port
-            ) {
-                Ok(_) => println!("Chunk {} transferred successfully.", stream_num),
-                Err(e) => {
-                    eprintln!("{}", e);
-                    let mut flags = retry_flag_clone.lock().unwrap();
-                    flags[stream_num] = true;
+                // Add any extra bytes to the last stream
+                if stream_num == num_streams - 1 {
+                    end += extra_bytes;
+                }
+
+                match stream_stream_to_remote(
+                    stream_num, start, end, &input_file, &remote_user, &remote_host, &remote_path, ssh_key_path_cloned.as_deref(), retries, ssh_port, pb
+                ) {
+                    Ok(_) => {
+                    },
+                    Err(e) => {
+                        eprintln!("{}", e);
+                        let mut flags = retry_flag_clone.lock().unwrap();
+                        flags[stream_num] = true;
+                    }
                 }
             }
         });
@@ -66,3 +83,4 @@ pub fn split_and_copy_binary_file(
         assemble_streams(&remote_user, &remote_host, &remote_path, ssh_key_path, num_streams, &input_file, ssh_port);
     }
 }
+

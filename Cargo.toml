@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 clap = "3.0"
+indicatif = "0.17.7"
