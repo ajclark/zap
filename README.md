@@ -31,6 +31,9 @@ OPTIONS:
 
 `./zap 100mb.bin user@host:`
 
+## Demo
+<img src="https://github.com/ajclark/zap/blob/main/zap.gif?raw=true">
+
 ### Why would I want this?
 You should try Zap if your existing file transfer tool is not adequately utilizing your available network bandwidth.
 
