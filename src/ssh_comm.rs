@@ -23,7 +23,7 @@ pub fn stream_stream_to_remote(
     pb: ProgressBar,
 ) -> Result<(), String> {
 
-    // 100-750ms delay to prevent DoSing remote SSH daemon with 20 threads
+    // 100-750ms delay to prevent DoSing remote SSH daemon
     let delay = (stream_num * 123 % 651) + 100;
     thread::sleep(Duration::from_millis(delay as u64));
 
