@@ -35,10 +35,10 @@ OPTIONS:
 <img src="https://github.com/ajclark/zap/blob/main/zap.gif?raw=true">
 
 ### Why would I want this?
-You should try Zap if your existing file transfer tool is not adequately utilizing your available network bandwidth.
+You should consider Zap if your existing file transfer tool is not adequately utilizing your available network bandwidth.
 
 ### What if I have multiple files to send across a high-RTT link?
-If you need to send multiple files then rclone or rsync is likely better suited. Note that to drive up the utilization of your network pipe you will have to use rsync in conjunction with xargs or GNU parallel. It is also possible to run multiple instances of zap as you would with any other command. e.g. xargs. 
+If you need to send multiple files then rclone or rsync is likely better suited. Note that to drive up the utilization of your network pipe with rsync xargs or GNU parallel is likely required. It is also possible to run multiple instances of zap as you would with any other command. e.g. xargs -P.
 
 ### Does Zap help on low-RTT links?
 Yes. Take a look at the benchmarks below. A single file copy with scp might max out at 4Gbps on a local 10G LAN, where as Zap can drive 2x the throughput thanks to parallelism.  
