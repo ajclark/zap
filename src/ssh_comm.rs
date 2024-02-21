@@ -130,7 +130,7 @@ pub fn assemble_streams(
     let remove_existing_file_command = format!("rm -f {}/{}", remote_path, file_name);
 
     let assemble_command: Vec<String> = (0..num_streams)
-        .map(|i| format!("cat {}/stream_{}.bin >> {}/{} && rm {}/stream_{}.bin", remote_path, i, remote_path, file_name, remote_path, i))
+        .map(|i| format!("cat {}/stream_{}.bin >> \"{}/{}\" && rm {}/stream_{}.bin", remote_path, i, remote_path, file_name, remote_path, i))
         .collect();
 
     let ssh_key_arg = ssh_key_path.map_or_else(|| "".to_string(), |key| format!("-i {}", key));
