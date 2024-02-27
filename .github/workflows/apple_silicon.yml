@@ -18,10 +18,10 @@ jobs:
         export PATH="$HOME/.cargo/bin:$PATH"
         rustup default stable
 
-    - name: Build Rust code
+    - name: Build Rust Code
       run: cargo build --release
 
-    - name: Get release version
+    - name: Get Release Version
       id: get_release_version
       run: echo "::set-output name=version::${GITHUB_REF#refs/tags/}"
 
