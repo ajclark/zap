@@ -35,3 +35,4 @@ jobs:
       with:
         name: zap
         path: ${{ steps.get_release_version.outputs.version }}.zip
+        release_id: ${{ github.event.release.id }}
