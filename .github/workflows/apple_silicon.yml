@@ -19,7 +19,7 @@ jobs:
         rustup default stable
 
     - name: Build Rust Code
-      run: cargo build --release
+      run: cargo +stable-aarch64-apple-darwin build --release
 
     - name: Get Release Version
       id: get_release_version
