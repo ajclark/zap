@@ -19,7 +19,7 @@ jobs:
         rustup default stable
 
     - name: Build Rust Code
-      run: cargo +stable-aarch64-apple-darwin build --release
+      run: cargo build --release
 
     - name: Get Release Version
       id: get_release_version
@@ -37,5 +37,5 @@ jobs:
       with:
         upload_url: ${{ github.event.release.upload_url }}
         asset_path: ./${{ steps.get_release_version.outputs.version }}.zip
-        asset_name: "zap-${{ steps.get_release_version.outputs.version }}.zip"
+        asset_name: "zap-${{ steps.get_release_version.outputs.version }}-macos-aarch64.zip"
         asset_content_type: application/zip
