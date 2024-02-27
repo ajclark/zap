@@ -31,8 +31,11 @@ jobs:
         zip -r "$version.zip" target/release/zap
 
     - name: Upload Release Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        name: zap
-        path: ${{ steps.get_release_version.outputs.version }}.zip
-        release_id: ${{ github.event.release.id }}
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./${{ steps.get_release_version.outputs.version }}.zip
+        asset_name: "zap-${{ steps.get_release_version.outputs.version }}.zip"
+        asset_content_type: application/zip
