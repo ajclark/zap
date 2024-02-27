@@ -1,4 +1,4 @@
-name: Apple Silicon Build & Release
+name: Build and Release
 
 on:
   release:
@@ -12,8 +12,11 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Install Rust via Homebrew
-      run: brew install rust
+    - name: Install Rust
+      run: |
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+        export PATH="$HOME/.cargo/bin:$PATH"
+        rustup default stable
 
     - name: Build Rust code
       run: cargo build --release
