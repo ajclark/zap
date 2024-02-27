@@ -1,0 +1,34 @@
+name: Apple Silicon Build & Release
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: macos-14
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install Rust via Homebrew
+      run: brew install rust
+
+    - name: Build Rust code
+      run: cargo build --release
+
+    - name: Get release version
+      id: get_release_version
+      run: echo "::set-output name=version::${GITHUB_REF#refs/tags/}"
+
+    - name: Create Zip Archive
+      run: |
+        version=$(echo ${{ steps.get_release_version.outputs.version }})
+        zip -r "$version.zip" target/release/your_binary_name
+
+    - name: Upload Release Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: my-binary
+        path: ${{ steps.get_release_version.outputs.version }}.zip
