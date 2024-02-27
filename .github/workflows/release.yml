@@ -6,13 +6,13 @@ on:
 jobs:
   release:
     name: release ${{ matrix.target }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - target: x86_64-unknown-linux-musl
-            archive: tar.gz
+        os: [ubuntu-latest, macos-14]
+        target: [x86_64-unknown-linux-musl, aarch64-apple-darwin]
+        archive: [tar.gz, dmg]           
     steps:
       - uses: actions/checkout@master
       - name: Compile and release
