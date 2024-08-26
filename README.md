@@ -9,7 +9,7 @@ To send a 100GB file, Zap requires 105GB of total remote space but no additional
 Zap also takes advantage of the BBR TCP congestion control algorithm, which achieves higher overall TCP throughput over high-RTT links than CUBIC.
 
 ## Requirements
-For fastest throughput on high-RTT links, change the congestion algorithm on both ends to BBR: `sysctl net.ipv4.tcp_congestion_control=bbr`. Make this permanent through updating `/etc/sysctl.conf`
+For fastest throughput on high-RTT links, change the congestion algorithm on the sender to BBR: `sysctl net.ipv4.tcp_congestion_control=bbr`. Make this permanent through updating `/etc/sysctl.conf`
 
 ## Usage
 ```
