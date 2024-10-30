@@ -9,6 +9,10 @@ use indicatif::ProgressBar;
 const RETRY_DELAY_SECONDS: u64 = 5;
 const BUFFER_SIZE: usize = 1 * 1024 * 1024; // 1MB
 
+fn get_stream_path(base_path: &str, stream_num: usize, file_name: &str) -> String {
+    format!("{}/.tmp-{}_stream_{}.bin", base_path, file_name, stream_num)
+}
+
 pub fn stream_stream_from_remote(
     stream_num: usize,
     start: usize,
@@ -25,6 +29,12 @@ pub fn stream_stream_from_remote(
     let mut attempt = 0;
     let ssh_port_str = ssh_port.to_string();
     let bytes_to_read = end - start;
+
+    let file_name = Path::new(remote_file)
+        .file_name()
+        .unwrap_or_default()
+        .to_str()
+        .unwrap_or_default();
 
     while attempt <= retries {
         let user_host = format!("{}@{}", remote_user, remote_host);
@@ -66,7 +76,7 @@ pub fn stream_stream_from_remote(
 
         let result = (|| -> io::Result<()> {
             if let Some(mut stdout) = child.stdout.take() {
-                let stream_path = format!("{}/stream_{}.bin", local_path, stream_num);
+                let stream_path = get_stream_path(local_path, stream_num, file_name);
                 let mut file = File::create(&stream_path)?;
                 let mut total_read = 0;
                 let mut buffer = vec![0u8; BUFFER_SIZE];
@@ -162,9 +172,16 @@ pub fn stream_stream_to_remote(
     let ssh_port_str = ssh_port.to_string();
     let bytes_to_transfer = end - start;
 
+    let file_name = Path::new(input_file)
+        .file_name()
+        .unwrap_or_default()
+        .to_str()
+        .unwrap_or_default();
+    let stream_path = format!(".tmp-{}_stream_{}.bin", file_name, stream_num);
+
     while attempt <= retries {
         let user_host = format!("{}@{}", remote_user, remote_host);
-        let stream_command = format!("cat > {}/stream_{}.bin", remote_path, stream_num);
+        let stream_command = format!("cat > {}/{}", remote_path, stream_path);
         let mut ssh_args = vec![
             "-p", &ssh_port_str,
             "-o", "StrictHostKeyChecking=no",
@@ -280,8 +297,14 @@ pub fn assemble_local_streams(
     println!("Assembling {} streams into {}", num_streams, output_file);
     let mut output = File::create(output_file)?;
     
+    let file_name = Path::new(output_file)
+        .file_name()
+        .unwrap_or_default()
+        .to_str()
+        .unwrap_or_default();
+    
     for i in 0..num_streams {
-        let stream_path = format!("{}/stream_{}.bin", local_path, i);
+        let stream_path = get_stream_path(local_path, i, file_name);
         let mut stream_file = File::open(&stream_path)?;
         io::copy(&mut stream_file, &mut output)?;
         std::fs::remove_file(&stream_path)?;
@@ -310,8 +333,13 @@ pub fn assemble_streams(
     let remove_existing_file_command = format!("rm -f {}/{}", remote_path, file_name);
 
     let assemble_command: Vec<String> = (0..num_streams)
-        .map(|i| format!("cat {}/stream_{}.bin >> \"{}/{}\" && rm {}/stream_{}.bin", 
-             remote_path, i, remote_path, file_name, remote_path, i))
+        .map(|i| format!("cat {}/{} >> \"{}/{}\" && rm {}/{}", 
+             remote_path, 
+             format!(".tmp-{}_stream_{}.bin", file_name, i),
+             remote_path, 
+             file_name,
+             remote_path,
+             format!(".tmp-{}_stream_{}.bin", file_name, i)))
         .collect();
 
     let ssh_key_arg = ssh_key_path.map_or_else(|| "".to_string(), |key| format!("-i {}", key));
