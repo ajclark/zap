@@ -89,8 +89,8 @@ fn validate_paths(source: &str, destination: &str) -> Result<(), String> {
 }
 
 fn main() {
-    let matches = App::new("Zap — Fast file copy")
-        .version("0.1")
+    let matches = App::new("Zap")
+        .version("v0.8.0-alpha")
         .author("Allan Clark. <napta2k@gmail.com>")
         .about("Transfers a file in parallel streams over SSH")
         .arg_required_else_help(true)
