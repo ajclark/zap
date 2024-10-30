@@ -1,4 +1,4 @@
-name: Build binaries
+name: Build Binaries
 
 permissions:
   contents: write
@@ -9,27 +9,32 @@ on:
 
 jobs:
   create-assets:
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, macos-14]
-    runs-on: ${{ matrix.os }}
+
     steps:
       - uses: actions/checkout@v4
 
-      # Build the binary for each OS
+      # Get the architecture of the GitHub runner
+      - name: Get Architecture
+        id: arch
+        run: echo "ARCH=$(uname -m)" >> $GITHUB_ENV
+
+      # Build the binary for the detected architecture
       - name: Build Binary
         run: |
-          # Sample build commands; modify based on your project
           cargo build --release
           mkdir -p dist
-          cp target/release/zap dist/zap-${{ matrix.os }}
+          cp target/release/${{ github.event.repository.name }} dist/${{ github.event.repository.name }}-${{ matrix.os }}-${{ env.ARCH }}
 
       # Upload the built binaries as release assets
       - uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: dist/zap-${{ matrix.os }}
-          asset_name: zap-${{ matrix.os }}
+          asset_path: dist/${{ github.event.repository.name }}-${{ matrix.os }}-${{ env.ARCH }}
+          asset_name: ${{ github.event.repository.name }}-${{ matrix.os }}-${{ env.ARCH }}
           asset_content_type: application/octet-stream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
