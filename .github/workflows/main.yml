@@ -29,12 +29,18 @@ jobs:
           mkdir -p dist
           cp target/release/${{ github.event.repository.name }} dist/${{ github.event.repository.name }}-${{ matrix.os }}-${{ env.ARCH }}
 
-      # Upload the built binaries as release assets
+      # Compress the binary into a tar.gz file
+      - name: Archive Binary
+        run: |
+          cd dist
+          tar -czf ${{ github.event.repository.name }}-${{ matrix.os }}-${{ env.ARCH }}.tar.gz ${{ github.event.repository.name }}-${{ matrix.os }}-${{ env.ARCH }}
+
+      # Upload the compressed binaries as release assets
       - uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: dist/${{ github.event.repository.name }}-${{ matrix.os }}-${{ env.ARCH }}
-          asset_name: ${{ github.event.repository.name }}-${{ matrix.os }}-${{ env.ARCH }}
-          asset_content_type: application/octet-stream
+          asset_path: dist/${{ github.event.repository.name }}-${{ matrix.os }}-${{ env.ARCH }}.tar.gz
+          asset_name: ${{ github.event.repository.name }}-${{ matrix.os }}-${{ env.ARCH }}.tar.gz
+          asset_content_type: application/gzip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
