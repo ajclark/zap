@@ -43,20 +43,20 @@ EXAMPLES:
 ## How does Zap work?
 Zap splits a single file in to 'streams' and copies all streams in parallel via SSH. This creates multiple parallel network flows that increases the aggregate utilization of the network pipe. Zap does not use any additional local disk space when creating streams, instead Zap reads the input file at different offsets in parallel and streams these offsets directly across the network via SSH. This saves time and avoids wasting local disk space. 
 
-Zap also takes advantage of the BBR TCP congestion control algorithm, which achieves higher overall TCP throughput over high-RTT links than CUBIC.
+Zap also takes advantage of the BBR TCP congestion control algorithm, which achieves higher overall TCP throughput over high latency links than CUBIC.
 
 ## Recommended OS settings
-For the fastest possible throughput on high-RTT links, change the congestion control algorithm on the sender side to BBR: `sysctl net.ipv4.tcp_congestion_control=bbr`. Make this permanent through updating `/etc/sysctl.conf`.
+For the fastest possible throughput on high latency links, change the congestion control algorithm on the sender side to BBR: `sysctl net.ipv4.tcp_congestion_control=bbr`. Make this permanent through updating `/etc/sysctl.conf`.
 
 ## FAQ
 ### Why would I want this?
 You should consider Zap if your existing file transfer tool is not adequately utilizing your available network bandwidth.
 
-### What if I have multiple files to send across a high-RTT link?
+### What if I have multiple files to send across a high latency link?
 If you need to send multiple files then rclone or rsync is likely better suited. Note that to drive up the utilization of your network pipe with rsync xargs or GNU parallel is likely required. It is also possible to run multiple instances of zap as you would with any other command. e.g. xargs -P.
 
-### Does Zap help on low-RTT links?
-Yes. Take a look at the benchmarks below. A single file copy with scp might max out at 7 Gbps on a local 100G LAN, where as Zap can drive 40-80 Gbps throughput thanks to parallelism. 
+### Does Zap help on low latency links?
+Yes. Take a look at the benchmarks below. A single file copy with scp might max out at 7 Gbps on a local 100G LAN, where as Zap can drive 40-80 Gbps throughput.
 
 ## Benchmarks
 ``` 
