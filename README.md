@@ -83,4 +83,5 @@ WAN (40 Gbps)*
 ## Build instructions
 Zap has been tested On Debian/Ubuntu/EL Linux and MacOS. It will possibly work on Windows, but requires SSH and a shell environment.
 
-`cd zap && cargo build --release`
+1. Install rust
+2. `cd zap && cargo build --release`
