@@ -13,12 +13,16 @@ For fastest throughput on high-RTT links, change the congestion algorithm on bot
 
 ## Usage
 ```
+Zap — Fast file copy 0.1
+Allan Clark. <napta2k@gmail.com>
+Transfers a file in parallel streams over SSH
+
 USAGE:
-    zap [OPTIONS] <input_file> <user@host:remote_path>
+    zap [OPTIONS] <source> <destination>
 
 ARGS:
-    <input_file>               The input file path
-    <user@host:remote_path>    Specifies user@host:remote_path
+    <source>         Source file (local file or user@host:remote_path)
+    <destination>    Destination (local file or user@host:remote_path)
 
 OPTIONS:
     -h, --help                           Print help information
@@ -27,9 +31,14 @@ OPTIONS:
     -r, --retries <retries>              The number of retries to attempt [default: 3]
     -s, --streams <streams>              The number of parallel streams [default: 20]
     -V, --version                        Print version information
-```
 
-`./zap 100mb.bin user@host:`
+EXAMPLES:
+	Pull a file from remote to local:
+		zap user@remote_host:/path/to/remote_file /local/destination/
+
+	Push a file from local to remote:
+		zap /local/path/to/file user@remote_host:/remote/destination/
+```
 
 ## Demo
 <img src="https://github.com/ajclark/zap/blob/main/zap.gif?raw=true">
