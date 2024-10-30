@@ -1,4 +1,4 @@
-name: Release
+name: Build binaries
 
 permissions:
   contents: write
@@ -22,14 +22,14 @@ jobs:
           # Sample build commands; modify based on your project
           cargo build --release
           mkdir -p dist
-          cp target/release/my_binary dist/my_binary-${{ matrix.os }}
+          cp target/release/zap dist/zap-${{ matrix.os }}
 
       # Upload the built binaries as release assets
       - uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: dist/my_binary-${{ matrix.os }}
-          asset_name: my_binary-${{ matrix.os }}
+          asset_path: dist/zap-${{ matrix.os }}
+          asset_name: zap-${{ matrix.os }}
           asset_content_type: application/octet-stream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
