@@ -1,15 +1,5 @@
 # zap
-Zap is designed to transmit a single file as quickly as possible over a high-latency, high-bandwidth network connection. e.g. California to New York, London to Sydney, or within datacenters. Zap is many times faster than conventional file transfer tools and aims to saturate the network connection, even over high-latency links. Zap has been tested with 100 Gbps NICs in both datacenter and WAN scenarios.
-
-## How does Zap work?
-Zap splits a single file in to 'streams' and copies all streams in parallel via SSH. This creates multiple parallel network flows that increases the aggregate utilization of the network pipe. Zap does not use any additional local disk space when creating streams, instead Zap reads the input file at different offsets in parallel and streams these offsets directly across the network via SSH. This saves time and avoids wasting local disk space. 
-
-To send a 100GB file, Zap requires 105GB of total remote space but no additional local space. Zap uses the additional remote space as buffer write out the temporary streams prior to final assembly of the file. The remote end disk space formula is `filesize + size_of_a_stream`.
-
-Zap also takes advantage of the BBR TCP congestion control algorithm, which achieves higher overall TCP throughput over high-RTT links than CUBIC.
-
-## Requirements
-For fastest throughput on high-RTT links, change the congestion algorithm on both ends to BBR: `sysctl net.ipv4.tcp_congestion_control=bbr`. Make this permanent through updating `/etc/sysctl.conf`
+Zap is designed to transmit a file as fast as possible over a high-latency, high-bandwidth network connection. e.g. California to New York, London to Sydney, or within datacenters. Zap is many times faster than conventional file transfer tools and aims to saturate the network connection, even over high-latency links. Zap has been tested with 100 Gbps NICs in both datacenter and WAN scenarios.
 
 ## Usage
 ```
@@ -42,6 +32,16 @@ EXAMPLES:
 
 ## Demo
 <img src="https://github.com/ajclark/zap/blob/main/zap.gif?raw=true">
+
+## How does Zap work?
+Zap splits a single file in to 'streams' and copies all streams in parallel via SSH. This creates multiple parallel network flows that increases the aggregate utilization of the network pipe. Zap does not use any additional local disk space when creating streams, instead Zap reads the input file at different offsets in parallel and streams these offsets directly across the network via SSH. This saves time and avoids wasting local disk space. 
+
+To send a 100GB file, Zap requires 105GB of total remote space but no additional local space. Zap uses the additional remote space as buffer write out the temporary streams prior to final assembly of the file. The remote end disk space formula is `filesize + size_of_a_stream`.
+
+Zap also takes advantage of the BBR TCP congestion control algorithm, which achieves higher overall TCP throughput over high-RTT links than CUBIC.
+
+## Recommended OS settings
+For the fastest possible throughput on high-RTT links, change the congestion control algorithm on the sender side to BBR: `sysctl net.ipv4.tcp_congestion_control=bbr`. Make this permanent through updating `/etc/sysctl.conf`.
 
 ### Why would I want this?
 You should consider Zap if your existing file transfer tool is not adequately utilizing your available network bandwidth.
@@ -78,4 +78,3 @@ WAN (40 Gbps)*
 Zap has been tested On Debian/Ubuntu/EL Linux and MacOS. It will possibly work on Windows, but requires SSH and a shell environment.
 
 `cd zap && cargo build --release`
-
