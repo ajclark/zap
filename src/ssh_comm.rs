@@ -61,10 +61,10 @@ pub fn stream_stream_from_remote(
         let mut child = match Command::new("ssh")
             .args(&ssh_args)
             .stdout(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::null())
             .spawn() {
                 Ok(child) => child,
-                Err(e) => {
-                    eprintln!("Failed to spawn SSH process: {}", e);
+                Err(_) => {
                     attempt += 1;
                     if attempt > retries {
                         return Err(format!("Failed to spawn SSH after {} retries", retries));
@@ -129,24 +129,16 @@ pub fn stream_stream_from_remote(
             Ok(_) => {
                 match child.wait() {
                     Ok(status) if status.success() => return Ok(()),
-                    Ok(_) => {
-                        eprintln!("SSH process exited with non-zero status for stream {}", stream_num);
-                        attempt += 1;
-                    },
-                    Err(e) => {
-                        eprintln!("Error waiting for SSH process: {}", e);
-                        attempt += 1;
-                    }
+                    Ok(_) => attempt += 1,
+                    Err(_) => attempt += 1,
                 }
             },
-            Err(e) => {
-                eprintln!("Error streaming stream {}: {}", stream_num, e);
+            Err(_) => {
                 attempt += 1;
                 if attempt > retries {
                     pb.finish_with_message("failed");
                     return Err(format!("Failed to stream stream {} after {} retries", stream_num, retries));
                 }
-                eprintln!("Retrying stream {} ({}/{})", stream_num, attempt, retries);
                 thread::sleep(Duration::from_secs(RETRY_DELAY_SECONDS));
             }
         }
@@ -154,7 +146,6 @@ pub fn stream_stream_from_remote(
 
     Err(format!("Failed to stream stream {} after {} retries", stream_num, retries))
 }
-
 pub fn stream_stream_to_remote(
     stream_num: usize,
     start: usize,
@@ -197,10 +188,10 @@ pub fn stream_stream_to_remote(
         let mut child = match Command::new("ssh")
             .args(&ssh_args)
             .stdin(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::null())
             .spawn() {
                 Ok(child) => child,
-                Err(e) => {
-                    eprintln!("Failed to spawn SSH process: {}", e);
+                Err(_) => {
                     attempt += 1;
                     if attempt > retries {
                         return Err(format!("Failed to spawn SSH after {} retries", retries));
@@ -263,24 +254,16 @@ pub fn stream_stream_to_remote(
             Ok(_) => {
                 match child.wait() {
                     Ok(status) if status.success() => return Ok(()),
-                    Ok(_) => {
-                        eprintln!("SSH process exited with non-zero status for stream {}", stream_num);
-                        attempt += 1;
-                    },
-                    Err(e) => {
-                        eprintln!("Error waiting for SSH process: {}", e);
-                        attempt += 1;
-                    }
+                    Ok(_) => attempt += 1,
+                    Err(_) => attempt += 1,
                 }
             },
-            Err(e) => {
-                eprintln!("Error streaming stream {}: {}", stream_num, e);
+            Err(_) => {
                 attempt += 1;
                 if attempt > retries {
                     pb.finish_with_message("failed");
                     return Err(format!("Failed to stream stream {} after {} retries", stream_num, retries));
                 }
-                eprintln!("Retrying stream {} ({}/{})", stream_num, attempt, retries);
                 thread::sleep(Duration::from_secs(RETRY_DELAY_SECONDS));
             }
         }
@@ -356,6 +339,7 @@ pub fn assemble_streams(
     Command::new("sh")
         .arg("-c")
         .arg(&ssh_command)
+        .stderr(std::process::Stdio::null())
         .status()
         .expect("Failed to execute ssh command to assemble and clean up streams");
 
