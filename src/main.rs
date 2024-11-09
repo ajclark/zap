@@ -126,6 +126,11 @@ fn main() {
             .takes_value(true)
             .required(false)
             .default_value("22"))
+        .arg(Arg::new("quiet")
+            .short('q')
+            .long("quiet")
+            .help("Suppress progress output")
+            .takes_value(false))
         .after_help(
             "EXAMPLES:\n\
             \tPull a file from remote to local:\n\
@@ -172,11 +177,13 @@ fn main() {
 
     let ssh_key_path = matches.value_of("ssh_key_path");
     let max_threads = num_streams;
+    let quiet_mode = matches.is_present("quiet");
 
     match (source_remote, dest_remote) {
         (Some((remote_user, remote_host)), None) => {
             // Pull transfer
             if let Err(e) = split_and_copy_from_remote(
+                quiet_mode,
                 &source_path,
                 num_streams,
                 &remote_user,
@@ -194,6 +201,7 @@ fn main() {
         (None, Some((remote_user, remote_host))) => {
             // Push transfer
             split_and_copy_binary_file(
+                quiet_mode,
                 &source_path,
                 num_streams,
                 &remote_user,

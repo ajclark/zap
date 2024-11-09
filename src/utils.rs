@@ -94,6 +94,7 @@ fn get_remote_file_size(
 }
 
 pub fn split_and_copy_binary_file(
+    quiet_mode: bool,
     input_file: &str,
     num_streams: usize,
     remote_user: &str,
@@ -104,7 +105,9 @@ pub fn split_and_copy_binary_file(
     retries: u32,
     ssh_port: usize,
 ) {
-    println!("Preparing to transfer {}...", input_file);
+    if !quiet_mode {
+        println!("Preparing to transfer {}...", input_file);
+    }
 
     let file_size = match fs::metadata(input_file) {
         Ok(metadata) => metadata.len() as usize,
@@ -120,24 +123,29 @@ pub fn split_and_copy_binary_file(
         streams_completed: 0,
     }));
 
-    println!("Local file size: {} ({})", format_size(file_size), file_size);
+    if !quiet_mode {
+        println!("Local file size: {} ({})", format_size(file_size), file_size);
 
-    let stream_size = file_size / num_streams;
-    println!("Using {} streams of approximately {} each", 
-             num_streams,
-             format_size(stream_size));
+        let stream_size = file_size / num_streams;
+        println!("Using {} streams of approximately {} each", 
+                 num_streams,
+                 format_size(stream_size));
 
-    let extra_bytes = file_size % num_streams;
-    if extra_bytes > 0 {
-        println!("Last stream will have an additional {} bytes", extra_bytes);
+        let extra_bytes = file_size % num_streams;
+        if extra_bytes > 0 {
+            println!("Last stream will have an additional {} bytes", extra_bytes);
+        }
+
+        println!("Initializing transfer...");
     }
-
-    println!("Initializing transfer...");
 
     let retry_flag = Arc::new(Mutex::new(vec![false; num_streams]));
     let mut handles = Vec::with_capacity(max_threads);
 
-    let m = MultiProgress::new();
+    let stream_size = file_size / num_streams;
+    let extra_bytes = file_size % num_streams;
+
+    let m = if !quiet_mode { MultiProgress::new() } else { MultiProgress::with_draw_target(indicatif::ProgressDrawTarget::hidden()) };
     let style = ProgressStyle::with_template(
         "[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {msg}",
     )
@@ -219,6 +227,7 @@ pub fn split_and_copy_binary_file(
 }
 
 pub fn split_and_copy_from_remote(
+    quiet_mode: bool,
     remote_file: &str,
     num_streams: usize,
     remote_user: &str,
@@ -229,7 +238,9 @@ pub fn split_and_copy_from_remote(
     retries: u32,
     ssh_port: usize,
 ) -> io::Result<()> {
-    println!("Preparing to transfer {}...", remote_file);
+    if !quiet_mode {
+        println!("Preparing to transfer {}...", remote_file);
+    }
     
     let file_size = get_remote_file_size(
         remote_file,
@@ -245,24 +256,29 @@ pub fn split_and_copy_from_remote(
         streams_completed: 0,
     }));
 
-    println!("Remote file size: {} ({})", format_size(file_size), file_size);
+    if !quiet_mode {
+        println!("Remote file size: {} ({})", format_size(file_size), file_size);
 
-    let stream_size = file_size / num_streams;
-    println!("Using {} streams of approximately {} each", 
-             num_streams,
-             format_size(stream_size));
+        let stream_size = file_size / num_streams;
+        println!("Using {} streams of approximately {} each", 
+                 num_streams,
+                 format_size(stream_size));
 
-    let extra_bytes = file_size % num_streams;
-    if extra_bytes > 0 {
-        println!("Last stream will have an additional {} bytes", extra_bytes);
+        let extra_bytes = file_size % num_streams;
+        if extra_bytes > 0 {
+            println!("Last stream will have an additional {} bytes", extra_bytes);
+        }
+
+        println!("Initializing transfer...");
     }
-
-    println!("Initializing transfer...");
     
     let retry_flag = Arc::new(Mutex::new(vec![false; num_streams]));
     let mut handles = Vec::with_capacity(max_threads);
 
-    let m = MultiProgress::new();
+    let stream_size = file_size / num_streams;
+    let extra_bytes = file_size % num_streams;
+
+    let m = if !quiet_mode { MultiProgress::new() } else { MultiProgress::with_draw_target(indicatif::ProgressDrawTarget::hidden()) };
     let style = ProgressStyle::with_template(
         "[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {msg}",
     )
