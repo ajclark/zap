@@ -58,9 +58,8 @@ pub fn split_and_copy_from_remote(
     remote_host: &str,
     local_path: &str,
     ssh_key_path: Option<&str>,
-    _max_threads: usize,
     retries: u32,
-    ssh_port: usize,
+    ssh_port: u16,
 ) -> io::Result<()> {
     if !quiet_mode {
         println!("Preparing to transfer {}...", remote_file);
@@ -69,7 +68,7 @@ pub fn split_and_copy_from_remote(
     // Create session config
     let cfg = SessionConfig {
         host: remote_host.to_string(),
-        port: ssh_port as u16,
+        port: ssh_port,
         user: remote_user.to_string(),
         key_path: ssh_key_path.map(|s| s.to_string()),
         retries,
@@ -216,9 +215,8 @@ pub fn split_and_copy_binary_file(
     remote_host: &str,
     remote_path: &str,
     ssh_key_path: Option<&str>,
-    _max_threads: usize,
     retries: u32,
-    ssh_port: usize,
+    ssh_port: u16,
 ) -> io::Result<()> {
     if !quiet_mode {
         println!("Preparing to transfer {}...", input_file);
@@ -249,7 +247,7 @@ pub fn split_and_copy_binary_file(
     // Create session config
     let cfg = SessionConfig {
         host: remote_host.to_string(),
-        port: ssh_port as u16,
+        port: ssh_port,
         user: remote_user.to_string(),
         key_path: ssh_key_path.map(|s| s.to_string()),
         retries,
