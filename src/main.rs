@@ -8,6 +8,60 @@ use std::process;
 use std::path::Path;
 
 fn parse_location(loc: &str) -> Option<(Option<(String, String)>, String)> {
+    // Check for Windows drive letter (C:\, D:\, etc.) - always local
+    if loc.len() >= 2 {
+        let chars: Vec<char> = loc.chars().collect();
+        if chars.len() >= 2 && chars[0].is_ascii_alphabetic() && chars[1] == ':' {
+            // Could be Windows drive (C:\) or just happen to have : at position 1
+            // Check if followed by \ or / (Windows path separator)
+            if chars.len() >= 3 && (chars[2] == '\\' || chars[2] == '/') {
+                return Some((None, loc.to_string()));
+            }
+        }
+    }
+
+    // Check for UNC path (\\server\share) - always local on Windows
+    if loc.starts_with("\\\\") || loc.starts_with("//") {
+        return Some((None, loc.to_string()));
+    }
+
+    // Check for IPv6 literal: [user@][IPv6]:path
+    if let Some(bracket_start) = loc.find('[') {
+        if let Some(bracket_end) = loc.find(']') {
+            if bracket_end > bracket_start {
+                let before_bracket = &loc[..bracket_start];
+                let ipv6_host = &loc[bracket_start + 1..bracket_end];
+                let after_bracket = &loc[bracket_end + 1..];
+
+                // after_bracket should be ":path" or empty
+                if after_bracket.is_empty() || after_bracket.starts_with(':') {
+                    let path = if after_bracket.is_empty() {
+                        ".".to_string()
+                    } else {
+                        let p = &after_bracket[1..];
+                        if p.is_empty() { "." } else { p }.to_string()
+                    };
+
+                    // Extract user from before_bracket
+                    let user = if before_bracket.is_empty() {
+                        env::var("USER").ok()?
+                    } else if before_bracket.ends_with('@') {
+                        let u = before_bracket.trim_end_matches('@');
+                        if u.is_empty() {
+                            return None; // Empty user
+                        }
+                        u.to_string()
+                    } else {
+                        return None; // Invalid format
+                    };
+
+                    return Some((Some((user, ipv6_host.to_string())), path));
+                }
+            }
+        }
+    }
+
+    // Standard parsing: [user@]host:path
     if loc.contains(':') {
         let parts: Vec<&str> = loc.splitn(2, ':').collect();
         if parts.len() != 2 {
@@ -15,12 +69,11 @@ fn parse_location(loc: &str) -> Option<(Option<(String, String)>, String)> {
         }
 
         let user_host = parts[0];
-        let mut path = parts[1].to_string();
-        
-        // If path is empty default to $CWD
-        if path.is_empty() {
-            path = ".".to_string();
-        }
+        let path = if parts[1].is_empty() {
+            ".".to_string()
+        } else {
+            parts[1].to_string()
+        };
 
         // Disallow empty user with @ present
         if user_host.starts_with('@') {
@@ -34,14 +87,23 @@ fn parse_location(loc: &str) -> Option<(Option<(String, String)>, String)> {
 
         let host_parts: Vec<&str> = user_host.split('@').collect();
         match host_parts.as_slice() {
-            [user, host] => Some((Some((user.to_string(), host.to_string())), path)),
+            [user, host] => {
+                if host.is_empty() {
+                    return None;
+                }
+                Some((Some((user.to_string(), host.to_string())), path))
+            }
             [host] => {
+                if host.is_empty() {
+                    return None;
+                }
                 let user = env::var("USER").ok()?;
                 Some((Some((user, host.to_string())), path))
-            },
-            _ => None
+            }
+            _ => None,
         }
     } else {
+        // No colon = local path
         Some((None, loc.to_string()))
     }
 }
@@ -161,12 +223,22 @@ fn main() {
             process::exit(1);
         });
 
-    let ssh_port: usize = matches.value_of("port").unwrap()
-        .parse()
+    if num_streams == 0 {
+        eprintln!("Error: streams must be at least 1");
+        process::exit(1);
+    }
+
+    let ssh_port: u16 = matches.value_of("port").unwrap()
+        .parse::<u16>()
         .unwrap_or_else(|_| {
-            eprintln!("Error: port must be a positive integer");
+            eprintln!("Error: port must be between 1 and 65535");
             process::exit(1);
         });
+
+    if ssh_port == 0 {
+        eprintln!("Error: port must be between 1 and 65535");
+        process::exit(1);
+    }
 
     let retries: u32 = matches.value_of("retries").unwrap()
         .parse()
@@ -176,7 +248,6 @@ fn main() {
         });
 
     let ssh_key_path = matches.value_of("ssh_key_path");
-    let max_threads = num_streams;
     let quiet_mode = matches.is_present("quiet");
 
     match (source_remote, dest_remote) {
@@ -190,7 +261,6 @@ fn main() {
                 &remote_host,
                 &dest_path,
                 ssh_key_path,
-                max_threads,
                 retries,
                 ssh_port,
             ) {
@@ -208,7 +278,6 @@ fn main() {
                 &remote_host,
                 &dest_path,
                 ssh_key_path,
-                max_threads,
                 retries,
                 ssh_port,
             ) {
