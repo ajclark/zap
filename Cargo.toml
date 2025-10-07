@@ -6,3 +6,5 @@ edition = "2021"
 [dependencies]
 clap = "3.0"
 indicatif = "0.17.7"
+ssh2 = "0.9"
+rand = "0.8"
