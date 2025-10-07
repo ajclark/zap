@@ -41,7 +41,7 @@ EXAMPLES:
 ```
 
 ## How does Zap work?
-Zap splits a single file in to 'streams' and copies all streams in parallel via SSH. This creates multiple parallel network flows that increases the aggregate utilization of the network pipe. Zap does not use any additional local disk space when creating streams, instead Zap reads the input file at different offsets in parallel and streams these offsets directly across the network via SSH. This saves time and avoids wasting local disk space. 
+Zap splits a single file in to 'streams' and copies all streams in parallel via SFTP. This creates multiple parallel network flows that increases the aggregate utilization of the network pipe. Zap does not use any additional disk space when creating streams, instead Zap reads the input file at different offsets in parallel and streams these offsets directly across the network via SFTP and writes them to a single (sparse) file at staggered off-sets.
 
 Zap also takes advantage of the BBR TCP congestion control algorithm, which achieves higher overall TCP throughput over high latency links than CUBIC.
 

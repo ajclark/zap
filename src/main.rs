@@ -1,5 +1,5 @@
-mod ssh_comm;
 mod utils;
+mod ssh;
 
 use clap::{App, Arg};
 use utils::{split_and_copy_binary_file, split_and_copy_from_remote};
@@ -200,7 +200,7 @@ fn main() {
         },
         (None, Some((remote_user, remote_host))) => {
             // Push transfer
-            split_and_copy_binary_file(
+            if let Err(e) = split_and_copy_binary_file(
                 quiet_mode,
                 &source_path,
                 num_streams,
@@ -211,7 +211,10 @@ fn main() {
                 max_threads,
                 retries,
                 ssh_port,
-            );
+            ) {
+                eprintln!("Error during push transfer: {}", e);
+                process::exit(1);
+            }
         },
         _ => {
             // This shouldn't happen due to validate_paths, but handle it anyway
