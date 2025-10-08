@@ -14,42 +14,67 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-14, windows-latest]
 
+    defaults:
+      run:
+        shell: bash
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Get Architecture
-        id: arch
-        run: echo "ARCH=$(uname -m)" >> $GITHUB_ENV
-        shell: bash
-
-      - name: Build Binary
+      # Compute OS/arch and pick extension + suffix
+      - name: Compute metadata
         run: |
-          cargo build --release
-          mkdir -p dist
-          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            cp target/release/${{ github.event.repository.name }}.exe dist/${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.os }}-${{ env.ARCH }}.exe
-          else
-            cp target/release/${{ github.event.repository.name }} dist/${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.os }}-${{ env.ARCH }}
-          fi
-        shell: bash
+          ARCH="$(uname -m)"
+          OS="${{ matrix.os }}"
+          EXT="tar.gz"; SUF=""
+          if [[ "$OS" == "windows-latest" ]]; then EXT="zip"; SUF=".exe"; fi
 
-      - name: Archive Binary
+          NAME="${{ github.event.repository.name }}-${{ github.ref_name }}-${OS}-${ARCH}"
+          echo "ARCH=$ARCH" >> $GITHUB_ENV
+          echo "OS=$OS" >> $GITHUB_ENV
+          echo "EXT=$EXT" >> $GITHUB_ENV
+          echo "SUF=$SUF" >> $GITHUB_ENV
+          echo "NAME=$NAME" >> $GITHUB_ENV
+
+      - name: Build
+        run: cargo build --release
+
+      - name: Stage artifact
+        run: |
+          mkdir -p dist
+          SRC="target/release/${{ github.event.repository.name }}${SUF}"
+          if [[ ! -f "$SRC" ]]; then
+            # Fallback if binary name != repo name
+            if [[ -n "$SUF" ]]; then
+              SRC="$(ls -1 target/release/*.exe | head -n1)"
+            else
+              SRC="$(ls -1 target/release/* | grep -v '\.rlib$' | grep -v '\.rmeta$' | grep -v '\.dSYM$' | head -n1)"
+            fi
+          fi
+          cp "$SRC" "dist/${NAME}${SUF}"
+
+      - name: Archive
         run: |
           cd dist
-          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            zip ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.os }}-${{ env.ARCH }}.zip *.exe
+          if [[ "$EXT" == "zip" ]]; then
+            # Windows: use zip if present, otherwise PowerShell
+            if command -v zip >/dev/null 2>&1; then
+              zip "${NAME}.zip" "${NAME}${SUF}"
+            else
+              pwsh -Command "Compress-Archive -Path '${NAME}${SUF}' -DestinationPath '${NAME}.zip' -Force"
+            fi
           else
-            tar -czf ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.os }}-${{ env.ARCH }}.tar.gz ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.os }}-${{ env.ARCH }}
+            tar -czf "${NAME}.tar.gz" "${NAME}"
           fi
-        shell: bash
+          # Save exact path for upload (no globs!)
+          echo "ARTIFACT=dist/${NAME}.${EXT}" >> $GITHUB_ENV
 
       - name: Upload release asset
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: |
-            dist/${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.os }}-${{ env.ARCH }}.*
-          asset_name: ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.os }}-${{ env.ARCH }}.${{ matrix.os == 'windows-latest' && 'zip' || 'tar.gz' }}
+          asset_path: ${{ env.ARTIFACT }}
+          asset_name: ${{ env.NAME }}.${{ env.EXT }}
           asset_content_type: application/octet-stream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
